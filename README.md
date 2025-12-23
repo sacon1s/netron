@@ -1,4 +1,4 @@
-What is NETRON?
+# What is NETRON?
 NETRON is a free, anonymous temporary email service that helps protect your privacy online. Generate disposable email addresses instantly without registration to avoid spam and keep your real inbox clean.
 
 How It Works
