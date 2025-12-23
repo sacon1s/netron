@@ -1,0 +1,3320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netron</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            --bg-card: #0d0d0d;
+            --border-primary: rgba(255, 255, 255, 0.06);
+            --border-secondary: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-tertiary: #555555;
+            --text-muted: #333333;
+            --accent: #ffffff;
+            --accent-dim: rgba(255, 255, 255, 0.1);
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --danger: #f87171;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ==================== ANIMATED BACKGROUND ==================== */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 80px 80px;
+            animation: gridMove 30s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(80px, 80px); }
+        }
+
+        .bg-gradient-1 {
+            position: absolute;
+            width: 1000px;
+            height: 1000px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%);
+            top: -400px;
+            right: -400px;
+            animation: float1 25s ease-in-out infinite;
+        }
+
+        .bg-gradient-2 {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 60%);
+            bottom: -300px;
+            left: -300px;
+            animation: float2 20s ease-in-out infinite;
+        }
+
+        .bg-gradient-3 {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.015) 0%, transparent 50%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse3 15s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-50px, 30px) scale(1.05); }
+            50% { transform: translate(-30px, 60px) scale(1); }
+            75% { transform: translate(20px, 30px) scale(0.95); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(40px, -40px) scale(1.05); }
+            66% { transform: translate(20px, 20px) scale(0.95); }
+        }
+
+        @keyframes pulse3 {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        }
+
+        /* Particles */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: particleFloat 20s linear infinite;
+        }
+
+        @keyframes particleFloat {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Scanlines */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.1) 2px,
+                rgba(0, 0, 0, 0.1) 4px
+            );
+            opacity: 0.3;
+        }
+
+        /* Noise overlay */
+        .noise {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.02;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* ==================== MAIN CONTAINER ==================== */
+        .main-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+        }
+
+        /* ==================== HEADER ==================== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 20px 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .header.scrolled {
+            padding: 15px 0;
+            background: rgba(0, 0, 0, 0.95);
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo-icon {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--text-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 30px;
+        }
+
+        .header-nav-link {
+            color: var(--text-tertiary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .header-nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--text-primary);
+            transition: width 0.3s ease;
+        }
+
+        .header-nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .header-nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* ==================== HERO SECTION ==================== */
+        .hero {
+            padding: 160px 0 80px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: var(--accent-dim);
+            border: 1px solid var(--border-secondary);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .hero-badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .hero-title-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(3rem, 12vw, 7rem);
+            font-weight: 900;
+            letter-spacing: clamp(8px, 3vw, 25px);
+            text-transform: uppercase;
+            color: var(--text-primary);
+            position: relative;
+            animation: fadeInUp 0.8s ease 0.2s both;
+            line-height: 1;
+        }
+
+        .hero-title::before {
+            content: 'NETRON';
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
+            transform: translate(5px, 5px);
+            z-index: -1;
+        }
+
+        .hero-title-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(3rem, 12vw, 7rem);
+            font-weight: 900;
+            letter-spacing: clamp(8px, 3vw, 25px);
+            color: var(--text-primary);
+            filter: blur(60px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: var(--text-tertiary);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 400;
+            margin-bottom: 50px;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .hero-subtitle span {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .hero-line {
+            width: 1px;
+            height: 80px;
+            background: linear-gradient(180deg, var(--text-primary), transparent);
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease 0.6s both;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==================== STATS SECTION ==================== */
+        .stats-section {
+            padding: 40px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--border-hover);
+            background: var(--bg-tertiary);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 16px;
+            background: var(--accent-dim);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* ==================== FEATURES SECTION ==================== */
+        .features-section {
+            padding: 60px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--text-primary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--border-hover);
+        }
+
+        .feature-card:hover::after {
+            opacity: 1;
+        }
+
+        .feature-icon-wrapper {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 25px;
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            border: 1px solid var(--border-secondary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .feature-icon-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 20px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+        .feature-icon {
+            width: 28px;
+            height: 28px;
+            color: var(--text-primary);
+        }
+
+        .feature-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .feature-desc {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            line-height: 1.6;
+        }
+
+        /* ==================== EMAIL GENERATOR SECTION ==================== */
+        .generator-section {
+            padding: 60px 0;
+        }
+
+        .generator-wrapper {
+            position: relative;
+        }
+
+        .generator-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: 24px;
+            padding: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        .generator-glow {
+            position: absolute;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .generator-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .generator-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+            border: 2px solid var(--border-secondary);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            position: relative;
+            animation: iconFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .generator-icon svg {
+            width: 36px;
+            height: 36px;
+        }
+
+        .generator-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .generator-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Timer */
+        .timer-wrapper {
+            margin-bottom: 35px;
+            display: none;
+        }
+
+        .timer-wrapper.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .timer-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 16px;
+            padding: 25px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .timer-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .timer-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-dim);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+        }
+
+        .timer-info h4 {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .timer-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 2px;
+        }
+
+        .timer-value.warning {
+            color: var(--warning);
+        }
+
+        .timer-value.danger {
+            color: var(--danger);
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .timer-right {
+            text-align: right;
+        }
+
+        .timer-progress-wrapper {
+            width: 150px;
+        }
+
+        .timer-progress-label {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+        }
+
+        .timer-progress {
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .timer-progress-bar {
+            height: 100%;
+            background: var(--text-primary);
+            border-radius: 3px;
+            transition: width 1s linear;
+        }
+
+        .timer-progress-bar.warning {
+            background: linear-gradient(90deg, var(--warning), var(--danger));
+        }
+
+        /* Email Display */
+        .email-display {
+            margin-bottom: 30px;
+        }
+
+        .email-label {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .email-box {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-secondary);
+            border-radius: 16px;
+            padding: 24px 28px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+            word-break: break-all;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .email-box.placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            letter-spacing: 0;
+        }
+
+        .email-box.active {
+            border-color: var(--text-primary);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        }
+
+        .email-box.active::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            z-index: -1;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 18px 30px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-dim);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn:disabled::before {
+            display: none;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Status */
+        .status-wrapper {
+            margin-top: 25px;
+        }
+
+        .status {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status.loading {
+            display: flex;
+            background: var(--accent-dim);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-secondary);
+        }
+
+        .status.success {
+            display: flex;
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        .status.error {
+            display: flex;
+            background: rgba(248, 113, 113, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-secondary);
+            border-top-color: var(--text-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ==================== INBOX SECTION ==================== */
+        .inbox-section {
+            padding: 40px 0 80px;
+            display: none;
+        }
+
+        .inbox-section.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .inbox-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        /* Tabs */
+        .inbox-tabs {
+            display: flex;
+            background: var(--bg-secondary);
+            padding: 8px;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .inbox-tab {
+            flex: 1;
+            padding: 14px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .inbox-tab:hover {
+            color: var(--text-secondary);
+            background: var(--accent-dim);
+        }
+
+        .inbox-tab.active {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .inbox-tab svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .tab-badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .inbox-tab.active .tab-badge {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Inbox Header */
+        .inbox-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inbox-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .inbox-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+        }
+
+        .inbox-count {
+            padding: 5px 12px;
+            background: var(--accent-dim);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .inbox-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 10px;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-icon:hover {
+            background: var(--accent-dim);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        .btn-icon.spinning svg {
+            animation: spin 1s linear infinite;
+        }
+
+        .btn-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Batch Actions */
+        .batch-actions {
+            display: none;
+            padding: 15px 30px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-primary);
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .batch-actions.active {
+            display: flex;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .batch-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .batch-info strong {
+            color: var(--text-primary);
+        }
+
+        .batch-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .batch-btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .batch-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .batch-btn.favorite {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--warning);
+        }
+
+        .batch-btn.favorite:hover {
+            background: rgba(251, 191, 36, 0.25);
+        }
+
+        .batch-btn.delete {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--danger);
+        }
+
+        .batch-btn.delete:hover {
+            background: rgba(248, 113, 113, 0.25);
+        }
+
+        /* Message List */
+        .message-list {
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .message-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 14px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .message-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-item:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-hover);
+            transform: translateX(5px);
+        }
+
+        .message-item.unread {
+            border-left: 3px solid var(--text-primary);
+        }
+
+        .message-item.selected {
+            background: var(--accent-dim);
+            border-color: var(--border-hover);
+        }
+
+        .message-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .message-checkbox:hover {
+            border-color: var(--text-secondary);
+        }
+
+        .message-checkbox.checked {
+            background: var(--text-primary);
+            border-color: var(--text-primary);
+        }
+
+        .message-checkbox svg {
+            display: none;
+            width: 12px;
+            height: 12px;
+            color: var(--bg-primary);
+        }
+
+        .message-checkbox.checked svg {
+            display: block;
+        }
+
+        .message-content-wrapper {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .message-from {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .message-from .fav-icon {
+            color: var(--warning);
+        }
+
+        .message-date {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-family: 'JetBrains Mono', monospace;
+            flex-shrink: 0;
+        }
+
+        .message-subject {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .message-preview {
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            flex-shrink: 0;
+        }
+
+        .message-item:hover .message-actions {
+            opacity: 1;
+        }
+
+        .msg-action-btn {
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-tertiary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .msg-action-btn:hover {
+            background: var(--accent-dim);
+            color: var(--text-primary);
+        }
+
+        .msg-action-btn.favorite.active {
+            color: var(--warning);
+            background: rgba(251, 191, 36, 0.15);
+        }
+
+        .msg-action-btn.delete:hover {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--danger);
+        }
+
+        .msg-action-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+        }
+
+        .empty-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            animation: emptyFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes emptyFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .empty-icon svg {
+            width: 48px;
+            height: 48px;
+        }
+
+        .empty-title {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .empty-desc {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Auto Refresh */
+        .auto-refresh {
+            padding: 20px 30px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+
+        .refresh-pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+        }
+
+        /* ==================== FOOTER ==================== */
+        .footer {
+            padding: 60px 0 40px;
+            border-top: 1px solid var(--border-primary);
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 50px;
+        }
+
+        .footer-brand {
+            max-width: 300px;
+        }
+
+        .footer-logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        .footer-desc {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            line-height: 1.7;
+        }
+
+        .footer-links-wrapper {
+            display: flex;
+            gap: 80px;
+        }
+
+        .footer-links h4 {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: var(--text-tertiary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-primary);
+        }
+
+        .footer-copyright {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .footer-api {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+        }
+
+        .footer-api svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* ==================== MODALS ==================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 24px;
+            max-width: 700px;
+            width: 100%;
+            margin: auto;
+            animation: modalSlideUp 0.4s ease;
+            position: relative;
+        }
+
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 30px;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .modal-header-actions {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .modal-close {
+            width: 42px;
+            height: 42px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 10px;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 20px;
+        }
+
+        .modal-close:hover {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--danger);
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        /* Message Modal */
+        .message-modal-meta {
+            background: var(--bg-tertiary);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .meta-row {
+            display: flex;
+            margin-bottom: 12px;
+        }
+
+        .meta-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .meta-label {
+            width: 70px;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        .meta-value {
+            flex: 1;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .message-modal-content {
+            background: var(--bg-tertiary);
+            border-radius: 14px;
+            padding: 25px;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .message-modal-content a {
+            color: var(--text-primary);
+            text-decoration: underline;
+        }
+
+        /* Legal Modals */
+        .legal-content {
+            padding: 40px;
+        }
+
+        .legal-header {
+            margin-bottom: 40px;
+        }
+
+        .legal-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .legal-updated {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+
+        .legal-section {
+            margin-bottom: 35px;
+        }
+
+        .legal-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .legal-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legal-section h3 svg {
+            width: 18px;
+            height: 18px;
+            color: var(--text-tertiary);
+        }
+
+        .legal-section p {
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .legal-section p:last-child {
+            margin-bottom: 0;
+        }
+
+        .legal-section ul {
+            list-style: none;
+            margin-top: 12px;
+        }
+
+        .legal-section li {
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+            line-height: 1.7;
+            padding-left: 24px;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .legal-section li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--text-muted);
+        }
+
+        .api-notice {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .api-notice-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-dim);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .api-notice-text {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
+        .api-notice-text strong {
+            color: var(--text-secondary);
+        }
+
+        /* ==================== NOTIFICATION ==================== */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            padding: 16px 28px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.2);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .notification svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 900px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .footer-links-wrapper {
+                gap: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-nav {
+                display: none;
+            }
+
+            .hero {
+                padding: 140px 0 60px;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+                letter-spacing: 8px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .stat-card {
+                padding: 20px 15px;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .generator-card {
+                padding: 30px 20px;
+            }
+
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+
+            .timer-card {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .timer-left {
+                flex-direction: column;
+            }
+
+            .timer-right {
+                text-align: center;
+            }
+
+            .timer-progress-wrapper {
+                width: 100%;
+            }
+
+            .inbox-tabs {
+                flex-wrap: wrap;
+            }
+
+            .inbox-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .inbox-actions {
+                justify-content: flex-end;
+            }
+
+            .batch-actions {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .batch-btns {
+                justify-content: center;
+            }
+
+            .message-item {
+                flex-wrap: wrap;
+            }
+
+            .message-actions {
+                opacity: 1;
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 10px;
+            }
+
+            .footer-links-wrapper {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .modal-container {
+                margin: 20px;
+            }
+
+            .legal-content {
+                padding: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+                letter-spacing: 5px;
+            }
+
+            .hero-subtitle {
+                font-size: 0.75rem;
+                letter-spacing: 2px;
+            }
+
+            .email-box {
+                font-size: 0.9rem;
+                padding: 20px;
+            }
+
+            .btn {
+                padding: 15px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background -->
+    <div class="bg-container">
+        <div class="bg-grid"></div>
+        <div class="bg-gradient-1"></div>
+        <div class="bg-gradient-2"></div>
+        <div class="bg-gradient-3"></div>
+        <div class="particles" id="particles"></div>
+        <div class="scanlines"></div>
+        <div class="noise"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header -->
+        <header class="header" id="header">
+            <div class="container">
+                <div class="header-content">
+                    <a href="#" class="header-logo">
+                        <div class="header-logo-icon">N</div>
+                        NETRON
+                    </a>
+                    <nav class="header-nav">
+                        <span class="header-nav-link" onclick="openModal('about')">About</span>
+                        <span class="header-nav-link" onclick="openModal('privacy')">Privacy</span>
+                        <span class="header-nav-link" onclick="openModal('terms')">Terms</span>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-badge">
+                    <div class="hero-badge-dot"></div>
+                    Secure & Anonymous
+                </div>
+                <div class="hero-title-wrapper">
+                    <div class="hero-title-glow">NETRON</div>
+                    <h1 class="hero-title">NETRON</h1>
+                </div>
+                <p class="hero-subtitle">Temporary <span>Email</span> Service</p>
+                <div class="hero-line"></div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-value" id="statEmails">0</div>
+                        <div class="stat-label">Emails Created</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-value" id="statMessages">0</div>
+                        <div class="stat-label">Messages</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </div>
+                        <div class="stat-value" id="statFavorites">0</div>
+                        <div class="stat-label">Favorites</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-value">60<span style="font-size: 1rem;">min</span></div>
+                        <div class="stat-label">Lifetime</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-label">Why Choose Netron</p>
+                    <h2 class="section-title">FEATURES</h2>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">100% Private</h3>
+                        <p class="feature-desc">No registration required. No personal data collected. Complete anonymity.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Auto Expire</h3>
+                        <p class="feature-desc">Emails automatically expire after 60 minutes. Reset timer with new messages.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Instant Delivery</h3>
+                        <p class="feature-desc">Real-time email updates. Receive messages instantly with auto-refresh.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Generator Section -->
+        <section class="generator-section">
+            <div class="container">
+                <div class="generator-wrapper">
+                    <div class="generator-card">
+                        <div class="generator-glow"></div>
+
+                        <div class="generator-header">
+                            <div class="generator-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </div>
+                            <h2 class="generator-title">GENERATE EMAIL</h2>
+                            <p class="generator-subtitle">Create your temporary email address instantly</p>
+                        </div>
+
+                        <!-- Timer -->
+                        <div class="timer-wrapper" id="timerWrapper">
+                            <div class="timer-card">
+                                <div class="timer-left">
+                                    <div class="timer-icon">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 6 12 12 16 14"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div class="timer-info">
+                                        <h4>Time Remaining</h4>
+                                        <div class="timer-value" id="timerValue">60:00</div>
+                                    </div>
+                                </div>
+                                <div class="timer-right">
+                                    <div class="timer-progress-wrapper">
+                                        <div class="timer-progress-label">Email expires in</div>
+                                        <div class="timer-progress">
+                                            <div class="timer-progress-bar" id="timerBar" style="width: 100%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email Display -->
+                        <div class="email-display">
+                            <div class="email-label">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                                Your Temporary Email
+                            </div>
+                            <div class="email-box placeholder" id="emailAddress">
+                                Click "Generate" to create a new email
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="copyEmail()" id="copyBtn" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                Copy Email
+                            </button>
+                            <button class="btn btn-primary" onclick="createEmail()" id="createBtn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 5v14M5 12h14"></path>
+                                </svg>
+                                Generate
+                            </button>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="status-wrapper">
+                            <div class="status" id="status">
+                                <div class="spinner"></div>
+                                <span>Creating email...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Inbox Section -->
+        <section class="inbox-section" id="inboxSection">
+            <div class="container">
+                <div class="inbox-card">
+                    <!-- Tabs -->
+                    <div class="inbox-tabs">
+                        <button class="inbox-tab active" onclick="switchTab('inbox')" id="tabInbox">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
+                                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                            </svg>
+                            Inbox
+                            <span class="tab-badge" id="inboxBadge">0</span>
+                        </button>
+                        <button class="inbox-tab" onclick="switchTab('favorites')" id="tabFavorites">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            Favorites
+                            <span class="tab-badge" id="favBadge">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Header -->
+                    <div class="inbox-header">
+                        <div class="inbox-title-wrapper">
+                            <h3 class="inbox-title" id="inboxTitle">INBOX</h3>
+                            <span class="inbox-count" id="inboxCount">0 messages</span>
+                        </div>
+                        <div class="inbox-actions">
+                            <button class="btn-icon" onclick="selectAll()" title="Select All">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 11 12 14 22 4"></polyline>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" onclick="refreshInbox()" id="refreshBtn" title="Refresh">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6"></path>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Batch Actions -->
+                    <div class="batch-actions" id="batchActions">
+                        <span class="batch-info"><strong id="selectedCount">0</strong> messages selected</span>
+                        <div class="batch-btns">
+                            <button class="batch-btn favorite" onclick="batchFavorite()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                Favorite
+                            </button>
+                            <button class="batch-btn delete" onclick="batchDelete()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Message List -->
+                    <div class="message-list" id="messageList">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
+                                    <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                                </svg>
+                            </div>
+                            <h4 class="empty-title">No messages yet</h4>
+                            <p class="empty-desc">Incoming emails will appear here automatically</p>
+                        </div>
+                    </div>
+
+                    <!-- Auto Refresh -->
+                    <div class="auto-refresh" id="autoRefresh">
+                        <div class="refresh-pulse"></div>
+                        <span>Auto-refreshing every 10 seconds</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <div class="footer-logo">NETRON</div>
+                        <p class="footer-desc">
+                            Secure temporary email service for protecting your privacy.
+                            No registration required, instant email generation.
+                        </p>
+                    </div>
+                    <div class="footer-links-wrapper">
+                        <div class="footer-links">
+                            <h4>Legal</h4>
+                            <ul>
+                                <li><a onclick="openModal('terms')">Terms of Service</a></li>
+                                <li><a onclick="openModal('privacy')">Privacy Policy</a></li>
+                                <li><a onclick="openModal('about')">About Us</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-links">
+                            <h4>Help</h4>
+                            <ul>
+                                <li><a href="https://boosty.to/netron1" target="_blank" rel="noopener noreferrer">Boosty</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p class="footer-copyright">© 2025 NETRON. All rights reserved.</p>
+                    <div class="footer-api">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                        Powered by Mail.tm API
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Message Modal -->
+    <div class="modal-overlay" id="messageModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalSubject">Subject</h3>
+                <div class="modal-header-actions">
+                    <button class="btn-icon" onclick="toggleFavoriteModal()" id="modalFavBtn" title="Add to Favorites">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </button>
+                    <button class="btn-icon" onclick="deleteMessageModal()" title="Delete">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                    <button class="modal-close" onclick="closeModal('message')">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="message-modal-meta">
+                    <div class="meta-row">
+                        <span class="meta-label">From:</span>
+                        <span class="meta-value" id="modalFrom"></span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">To:</span>
+                        <span class="meta-value" id="modalTo"></span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Date:</span>
+                        <span class="meta-value" id="modalDate"></span>
+                    </div>
+                </div>
+                <div class="message-modal-content" id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal-overlay" id="termsModal">
+        <div class="modal-container" style="max-width: 750px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Terms of Service</h3>
+                <button class="modal-close" onclick="closeModal('terms')">&times;</button>
+            </div>
+            <div class="legal-content">
+                <div class="legal-header">
+                    <h2 class="legal-title">TERMS OF SERVICE</h2>
+                    <p class="legal-updated">Last updated: January 2025</p>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                        Acceptance of Terms
+                    </h3>
+                    <p>By accessing and using NETRON temporary email service, you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        Service Description
+                    </h3>
+                    <p>NETRON provides temporary, disposable email addresses. These addresses are intended for short-term use and will automatically expire. The service is provided "as is" without any warranties.</p>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                        </svg>
+                        Prohibited Uses
+                    </h3>
+                    <p>You agree NOT to use NETRON for:</p>
+                    <ul>
+                        <li>Any illegal activities or fraud</li>
+                        <li>Harassment, abuse, or threatening behavior</li>
+                        <li>Spamming or unsolicited bulk messaging</li>
+                        <li>Bypassing security measures or verification</li>
+                        <li>Distribution of malware or harmful content</li>
+                        <li>Any activity that violates applicable laws</li>
+                    </ul>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        Limitation of Liability
+                    </h3>
+                    <p>NETRON shall not be liable for any indirect, incidental, special, consequential, or punitive damages. We do not guarantee uninterrupted service or that the service will be error-free.</p>
+                </div>
+
+                <div class="api-notice">
+                    <div class="api-notice-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                    </div>
+                    <div class="api-notice-text">
+                        This service utilizes the <strong>Mail.tm</strong> public API for email functionality.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Modal -->
+    <div class="modal-overlay" id="privacyModal">
+        <div class="modal-container" style="max-width: 750px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Privacy Policy</h3>
+                <button class="modal-close" onclick="closeModal('privacy')">&times;</button>
+            </div>
+            <div class="legal-content">
+                <div class="legal-header">
+                    <h2 class="legal-title">PRIVACY POLICY</h2>
+                    <p class="legal-updated">Last updated: January 2025</p>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        Our Commitment to Privacy
+                    </h3>
+                    <p>NETRON is designed with privacy as a core principle. We believe in minimal data collection and maximum user anonymity. Your privacy matters to us.</p>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        Data We Collect
+                    </h3>
+                    <p>We collect minimal data to provide our service:</p>
+                    <ul>
+                        <li>Temporary email addresses (automatically deleted)</li>
+                        <li>Email messages (processed via Mail.tm API)</li>
+                        <li>Favorites (stored locally in your browser only)</li>
+                        <li>Basic usage statistics (anonymous, no personal data)</li>
+                    </ul>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        Data We Don't Collect
+                    </h3>
+                    <ul>
+                        <li>Personal identification information</li>
+                        <li>IP addresses or location data</li>
+                        <li>Cookies for tracking purposes</li>
+                        <li>Any data sold to third parties</li>
+                    </ul>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Data Retention
+                    </h3>
+                    <p>All email data is temporary and automatically deleted. We do not maintain permanent records of your emails or activities. Favorites are stored only in your browser's local storage.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal-container" style="max-width: 750px;">
+            <div class="modal-header">
+                <h3 class="modal-title">About NETRON</h3>
+                <button class="modal-close" onclick="closeModal('about')">&times;</button>
+            </div>
+            <div class="legal-content">
+                <div class="legal-header">
+                    <h2 class="legal-title">ABOUT US</h2>
+                    <p class="legal-updated">Temporary Email Service</p>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        What is NETRON?
+                    </h3>
+                    <p>NETRON is a free, anonymous temporary email service that helps protect your privacy online. Generate disposable email addresses instantly without registration to avoid spam and keep your real inbox clean.</p>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                            <polyline points="2 17 12 22 22 17"></polyline>
+                            <polyline points="2 12 12 17 22 12"></polyline>
+                        </svg>
+                        How It Works
+                    </h3>
+                    <ul>
+                        <li>Click "Generate" to create a new temporary email</li>
+                        <li>Use this email for sign-ups, verifications, etc.</li>
+                        <li>Receive emails in real-time in your inbox</li>
+                        <li>Email automatically expires after 60 minutes</li>
+                        <li>Save important messages to favorites</li>
+                    </ul>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                        </svg>
+                        Technology
+                    </h3>
+                    <p>NETRON is built with modern web technologies and utilizes the Mail.tm public API for reliable email delivery. Our minimalist design focuses on speed, simplicity, and user experience.</p>
+                    <div class="api-notice">
+                        <div class="api-notice-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </div>
+                        <div class="api-notice-text">
+                            Powered by <strong>Mail.tm</strong> public API for secure email handling.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="legal-section">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        Perfect For
+                    </h3>
+                    <ul>
+                        <li>Signing up for online services</li>
+                        <li>Downloading resources that require email</li>
+                        <li>Testing email functionality</li>
+                        <li>Avoiding newsletter spam</li>
+                        <li>Protecting your primary email address</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span id="notificationText">Success!</span>
+    </div>
+
+   <script>
+// ==================== CONFIGURATION ====================
+const API_URL = 'https://api.mail.tm';
+const EMAIL_LIFETIME = 60 * 60; // 60 minutes in seconds
+const REFRESH_INTERVAL = 10000; // 10 seconds
+
+// ==================== STATE ====================
+let currentAccount = null;
+let token = null;
+let refreshIntervalId = null;
+let timerIntervalId = null;
+let timeRemaining = EMAIL_LIFETIME;
+let messages = [];
+let favorites = JSON.parse(localStorage.getItem('netron_favorites') || '[]');
+let selectedMessages = new Set();
+let currentTab = 'inbox';
+let currentMessageId = null;
+
+// Stats
+let stats = {
+    emails: parseInt(localStorage.getItem('netron_stats_emails') || '0'),
+    messages: parseInt(localStorage.getItem('netron_stats_messages') || '0')
+};
+
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', () => {
+    initParticles();
+    initHeaderScroll();
+    updateStats();
+    restoreSession();
+});
+
+// ==================== SESSION MANAGEMENT ====================
+function saveSession() {
+    if (currentAccount && token) {
+        const sessionData = {
+            account: currentAccount,
+            token: token,
+            timeRemaining: timeRemaining,
+            createdAt: Date.now()
+        };
+        localStorage.setItem('netron_session', JSON.stringify(sessionData));
+    }
+}
+
+function restoreSession() {
+    try {
+        const savedSession = localStorage.getItem('netron_session');
+        if (!savedSession) return;
+
+        const session = JSON.parse(savedSession);
+
+        const elapsed = Math.floor((Date.now() - session.createdAt) / 1000);
+        const remainingTime = session.timeRemaining - elapsed;
+
+        if (remainingTime <= 0) {
+            clearSession();
+            return;
+        }
+
+        currentAccount = session.account;
+        token = session.token;
+        timeRemaining = remainingTime;
+
+        validateAndRestoreSession();
+    } catch (error) {
+        console.error('Error restoring session:', error);
+        clearSession();
+    }
+}
+
+async function validateAndRestoreSession() {
+    try {
+        const res = await fetch(`${API_URL}/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+            const reauthorized = await reauthorize();
+            if (!reauthorized) {
+                clearSession();
+                return;
+            }
+        }
+
+        restoreUI();
+
+    } catch (error) {
+        console.error('Error validating session:', error);
+        const reauthorized = await reauthorize();
+        if (!reauthorized) {
+            clearSession();
+        } else {
+            restoreUI();
+        }
+    }
+}
+
+async function reauthorize() {
+    if (!currentAccount || !currentAccount.email || !currentAccount.password) {
+        return false;
+    }
+
+    try {
+        const tokenRes = await fetch(`${API_URL}/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                address: currentAccount.email,
+                password: currentAccount.password
+            })
+        });
+
+        if (!tokenRes.ok) return false;
+
+        const tokenData = await tokenRes.json();
+        token = tokenData.token;
+        saveSession();
+        return true;
+
+    } catch (error) {
+        console.error('Reauthorization failed:', error);
+        return false;
+    }
+}
+
+function restoreUI() {
+    const emailBox = document.getElementById('emailAddress');
+
+    emailBox.textContent = currentAccount.email;
+    emailBox.classList.remove('placeholder');
+    emailBox.classList.add('active');
+    document.getElementById('copyBtn').disabled = false;
+    document.getElementById('inboxSection').classList.add('active');
+    document.getElementById('timerWrapper').classList.add('active');
+
+    startTimer();
+    startAutoRefresh();
+    refreshInbox();
+
+    showNotification('Session restored!');
+}
+
+function clearSession() {
+    localStorage.removeItem('netron_session');
+    currentAccount = null;
+    token = null;
+    timeRemaining = EMAIL_LIFETIME;
+    messages = [];
+
+    if (refreshIntervalId) clearInterval(refreshIntervalId);
+    if (timerIntervalId) clearInterval(timerIntervalId);
+}
+
+function initParticles() {
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particle.style.animationDuration = (15 + Math.random() * 15) + 's';
+        container.appendChild(particle);
+    }
+}
+
+function initHeaderScroll() {
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+}
+
+function updateStats() {
+    document.getElementById('statEmails').textContent = stats.emails;
+    document.getElementById('statMessages').textContent = stats.messages;
+    document.getElementById('statFavorites').textContent = favorites.length;
+    document.getElementById('favBadge').textContent = favorites.length;
+}
+
+// ==================== EMAIL GENERATION ====================
+async function createEmail() {
+    const createBtn = document.getElementById('createBtn');
+    const emailBox = document.getElementById('emailAddress');
+
+    createBtn.disabled = true;
+    showStatus('Creating secure email...', 'loading');
+
+    try {
+        const domainsRes = await fetch(`${API_URL}/domains`);
+        const domainsData = await domainsRes.json();
+
+        if (!domainsData['hydra:member']?.length) {
+            throw new Error('No domains available');
+        }
+
+        const domain = domainsData['hydra:member'][0].domain;
+        const username = generateRandomString(12);
+        const email = `${username}@${domain}`;
+        const password = generateRandomString(16);
+
+        const createRes = await fetch(`${API_URL}/accounts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address: email, password })
+        });
+
+        if (!createRes.ok) {
+            const error = await createRes.json();
+            throw new Error(error.message || 'Failed to create account');
+        }
+
+        const accountData = await createRes.json();
+
+        const tokenRes = await fetch(`${API_URL}/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address: email, password })
+        });
+
+        if (!tokenRes.ok) throw new Error('Authorization failed');
+
+        const tokenData = await tokenRes.json();
+        token = tokenData.token;
+        currentAccount = { id: accountData.id, email, password };
+
+        timeRemaining = EMAIL_LIFETIME;
+        saveSession();
+
+        emailBox.textContent = email;
+        emailBox.classList.remove('placeholder');
+        emailBox.classList.add('active');
+        document.getElementById('copyBtn').disabled = false;
+        document.getElementById('inboxSection').classList.add('active');
+        document.getElementById('timerWrapper').classList.add('active');
+
+        stats.emails++;
+        localStorage.setItem('netron_stats_emails', stats.emails);
+        updateStats();
+
+        showStatus('Email created successfully!', 'success');
+
+        startTimer();
+        startAutoRefresh();
+        refreshInbox();
+
+    } catch (error) {
+        console.error('Error:', error);
+        showStatus(`Error: ${error.message}`, 'error');
+    } finally {
+        createBtn.disabled = false;
+    }
+}
+
+function generateRandomString(length) {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+// ==================== TIMER ====================
+function startTimer() {
+    updateTimerDisplay();
+
+    if (timerIntervalId) clearInterval(timerIntervalId);
+    timerIntervalId = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+
+        if (timeRemaining % 10 === 0) {
+            saveSession();
+        }
+
+        if (timeRemaining <= 0) {
+            clearInterval(timerIntervalId);
+            expireEmail();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    const timerValue = document.getElementById('timerValue');
+    const timerBar = document.getElementById('timerBar');
+
+    timerValue.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    const percentage = (timeRemaining / EMAIL_LIFETIME) * 100;
+    timerBar.style.width = `${percentage}%`;
+
+    timerValue.classList.remove('warning', 'danger');
+    timerBar.classList.remove('warning');
+
+    if (timeRemaining <= 300) {
+        timerValue.classList.add('danger');
+        timerBar.classList.add('warning');
+    } else if (timeRemaining <= 600) {
+        timerValue.classList.add('warning');
+        timerBar.classList.add('warning');
+    }
+}
+
+function resetTimer() {
+    timeRemaining = EMAIL_LIFETIME;
+    updateTimerDisplay();
+    saveSession();
+}
+
+function expireEmail() {
+    showNotification('Email expired! Generate a new one.');
+
+    const emailBox = document.getElementById('emailAddress');
+    emailBox.textContent = 'Email expired — Generate a new one';
+    emailBox.classList.add('placeholder');
+    emailBox.classList.remove('active');
+
+    document.getElementById('copyBtn').disabled = true;
+    document.getElementById('timerWrapper').classList.remove('active');
+
+    if (refreshIntervalId) clearInterval(refreshIntervalId);
+
+    clearSession();
+    messages = [];
+    displayMessages();
+}
+
+// ==================== INBOX ====================
+function startAutoRefresh() {
+    if (refreshIntervalId) clearInterval(refreshIntervalId);
+    refreshIntervalId = setInterval(refreshInbox, REFRESH_INTERVAL);
+}
+
+async function refreshInbox() {
+    if (!token) return;
+
+    const refreshBtn = document.getElementById('refreshBtn');
+    refreshBtn.classList.add('spinning');
+
+    try {
+        const res = await fetch(`${API_URL}/messages`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+            if (res.status === 401) {
+                const reauthorized = await reauthorize();
+                if (reauthorized) {
+                    return refreshInbox();
+                } else {
+                    throw new Error('Session expired');
+                }
+            }
+            throw new Error('Failed to fetch messages');
+        }
+
+        const data = await res.json();
+        const newMessages = data['hydra:member'] || [];
+
+        if (newMessages.length > messages.length) {
+            const diff = newMessages.length - messages.length;
+            stats.messages += diff;
+            localStorage.setItem('netron_stats_messages', stats.messages);
+            updateStats();
+            resetTimer();
+            showNotification(`${diff} new message${diff > 1 ? 's' : ''} received!`);
+        }
+
+        messages = newMessages;
+        document.getElementById('inboxCount').textContent = `${messages.length} message${messages.length !== 1 ? 's' : ''}`;
+        document.getElementById('inboxBadge').textContent = messages.length;
+        displayMessages();
+
+    } catch (error) {
+        console.error('Error:', error);
+        if (error.message === 'Session expired') {
+            expireEmail();
+        }
+    } finally {
+        refreshBtn.classList.remove('spinning');
+    }
+}
+
+function displayMessages() {
+    const list = document.getElementById('messageList');
+    const displayList = currentTab === 'inbox'
+        ? messages
+        : messages.filter(m => favorites.includes(m.id));
+
+    document.getElementById('inboxTitle').textContent = currentTab === 'inbox' ? 'INBOX' : 'FAVORITES';
+    document.getElementById('inboxCount').textContent = `${displayList.length} message${displayList.length !== 1 ? 's' : ''}`;
+
+    if (displayList.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        ${currentTab === 'inbox'
+                            ? '<path d="M22 12h-6l-2 3h-4l-2-3H2"></path><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>'
+                            : '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>'
+                        }
+                    </svg>
+                </div>
+                <h4 class="empty-title">${currentTab === 'inbox' ? 'No messages yet' : 'No favorites yet'}</h4>
+                <p class="empty-desc">${currentTab === 'inbox' ? 'Incoming emails will appear here automatically' : 'Star messages to add them to favorites'}</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = displayList.map(msg => {
+        const isFav = favorites.includes(msg.id);
+        const isSelected = selectedMessages.has(msg.id);
+        return `
+            <div class="message-item ${!msg.seen ? 'unread' : ''} ${isSelected ? 'selected' : ''}" data-id="${msg.id}">
+                <div class="message-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleSelect(event, '${msg.id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="message-content-wrapper" onclick="openMessage('${msg.id}')">
+                    <div class="message-header">
+                        <div class="message-from">
+                            ${escapeHtml(msg.from.name || msg.from.address)}
+                            ${isFav ? '<svg class="fav-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>' : ''}
+                        </div>
+                        <div class="message-date">${formatDate(msg.createdAt)}</div>
+                    </div>
+                    <div class="message-subject">${escapeHtml(msg.subject || '(No subject)')}</div>
+                    <div class="message-preview">${escapeHtml(msg.intro || '')}</div>
+                </div>
+                <div class="message-actions">
+                    <button class="msg-action-btn favorite ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${msg.id}')" title="Favorite">
+                        <svg viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </button>
+                    <button class="msg-action-btn delete" onclick="deleteMessage(event, '${msg.id}')" title="Delete">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    selectedMessages.clear();
+    updateBatchActions();
+
+    document.getElementById('tabInbox').classList.toggle('active', tab === 'inbox');
+    document.getElementById('tabFavorites').classList.toggle('active', tab === 'favorites');
+
+    displayMessages();
+}
+
+// ==================== MESSAGE SELECTION ====================
+function toggleSelect(event, id) {
+    event.stopPropagation();
+
+    if (selectedMessages.has(id)) {
+        selectedMessages.delete(id);
+    } else {
+        selectedMessages.add(id);
+    }
+
+    displayMessages();
+    updateBatchActions();
+}
+
+function selectAll() {
+    const displayList = currentTab === 'inbox' ? messages : messages.filter(m => favorites.includes(m.id));
+    const allSelected = selectedMessages.size === displayList.length && displayList.length > 0;
+
+    if (allSelected) {
+        selectedMessages.clear();
+    } else {
+        displayList.forEach(m => selectedMessages.add(m.id));
+    }
+
+    displayMessages();
+    updateBatchActions();
+}
+
+function updateBatchActions() {
+    const batchActions = document.getElementById('batchActions');
+    document.getElementById('selectedCount').textContent = selectedMessages.size;
+
+    if (selectedMessages.size > 0) {
+        batchActions.classList.add('active');
+    } else {
+        batchActions.classList.remove('active');
+    }
+}
+
+function batchFavorite() {
+    selectedMessages.forEach(id => {
+        if (!favorites.includes(id)) {
+            favorites.push(id);
+        }
+    });
+
+    localStorage.setItem('netron_favorites', JSON.stringify(favorites));
+    selectedMessages.clear();
+    updateBatchActions();
+    displayMessages();
+    updateStats();
+    showNotification('Added to favorites!');
+}
+
+async function batchDelete() {
+    for (const id of selectedMessages) {
+        await deleteMessageById(id);
+    }
+
+    selectedMessages.clear();
+    updateBatchActions();
+    await refreshInbox();
+    showNotification('Messages deleted!');
+}
+
+// ==================== MESSAGE ACTIONS ====================
+function toggleFavorite(event, id) {
+    event.stopPropagation();
+
+    const index = favorites.indexOf(id);
+    if (index > -1) {
+        favorites.splice(index, 1);
+    } else {
+        favorites.push(id);
+    }
+
+    localStorage.setItem('netron_favorites', JSON.stringify(favorites));
+    displayMessages();
+    updateStats();
+}
+
+async function deleteMessage(event, id) {
+    event.stopPropagation();
+    await deleteMessageById(id);
+    await refreshInbox();
+    showNotification('Message deleted!');
+}
+
+async function deleteMessageById(id) {
+    try {
+        await fetch(`${API_URL}/messages/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const favIndex = favorites.indexOf(id);
+        if (favIndex > -1) {
+            favorites.splice(favIndex, 1);
+            localStorage.setItem('netron_favorites', JSON.stringify(favorites));
+            updateStats();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// ==================== MESSAGE MODAL ====================
+async function openMessage(id) {
+    try {
+        const res = await fetch(`${API_URL}/messages/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to load message');
+
+        const message = await res.json();
+        currentMessageId = id;
+
+        document.getElementById('modalSubject').textContent = message.subject || '(No subject)';
+        document.getElementById('modalFrom').textContent = `${message.from.name || ''} <${message.from.address}>`;
+        document.getElementById('modalTo').textContent = message.to[0]?.address || '';
+        document.getElementById('modalDate').textContent = new Date(message.createdAt).toLocaleString();
+
+        // Обработка HTML контента
+        let content = message.html || `<pre style="white-space: pre-wrap;">${escapeHtml(message.text)}</pre>` || '<em>Empty message</em>';
+
+        // Создаем временный элемент для обработки HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+
+        // Находим все ссылки и исправляем/добавляем атрибуты
+        const links = tempDiv.querySelectorAll('a');
+        links.forEach(link => {
+            let originalHref = link.getAttribute('href');
+            if (originalHref) {
+                // Исправляем ссылки без протокола
+                if (!originalHref.match(/^[a-zA-Z0-9.+-]+:/i) && !originalHref.startsWith('#') && !originalHref.startsWith('javascript:') && !originalHref.startsWith('mailto:') && !originalHref.startsWith('tel:')) {
+                    if (originalHref.startsWith('//')) {
+                        // Protocol-relative: добавляем https:
+                        link.setAttribute('href', 'https:' + originalHref);
+                    } else {
+                        // Без протокола (например, "example.com" или "/path"): добавляем https:// и убираем ведущие /
+                        link.setAttribute('href', 'https://' + originalHref.replace(/^\/+/, ''));
+                    }
+                }
+                // Добавляем target и rel для безопасности
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            }
+        });
+
+        document.getElementById('modalContent').innerHTML = tempDiv.innerHTML;
+
+        const favBtn = document.getElementById('modalFavBtn');
+        favBtn.style.color = favorites.includes(id) ? 'var(--warning)' : '';
+
+        openModal('message');
+        refreshInbox();
+
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Failed to load message');
+    }
+}
+
+function toggleFavoriteModal() {
+    if (!currentMessageId) return;
+
+    const index = favorites.indexOf(currentMessageId);
+    const favBtn = document.getElementById('modalFavBtn');
+
+    if (index > -1) {
+        favorites.splice(index, 1);
+        favBtn.style.color = '';
+        showNotification('Removed from favorites');
+    } else {
+        favorites.push(currentMessageId);
+        favBtn.style.color = 'var(--warning)';
+        showNotification('Added to favorites!');
+    }
+
+    localStorage.setItem('netron_favorites', JSON.stringify(favorites));
+    displayMessages();
+    updateStats();
+}
+
+async function deleteMessageModal() {
+    if (!currentMessageId) return;
+
+    await deleteMessageById(currentMessageId);
+    closeModal('message');
+    await refreshInbox();
+    showNotification('Message deleted!');
+}
+
+// ==================== MODALS ====================
+function openModal(type) {
+    const modalId = type + 'Modal';
+    document.getElementById(modalId).classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal(type) {
+    const modalId = type + 'Modal';
+    document.getElementById(modalId).classList.remove('active');
+    document.body.style.overflow = '';
+
+    if (type === 'message') {
+        currentMessageId = null;
+    }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal(modal.id.replace('Modal', ''));
+        }
+    });
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+        });
+        document.body.style.overflow = '';
+    }
+});
+
+// ==================== UTILITY FUNCTIONS ====================
+function copyEmail() {
+    const email = document.getElementById('emailAddress').textContent;
+    if (email && !email.includes('Click') && !email.includes('expired')) {
+        navigator.clipboard.writeText(email).then(() => {
+            showNotification('Email copied to clipboard!');
+        });
+    }
+}
+
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    document.getElementById('notificationText').textContent = message;
+    notification.classList.add('show');
+    setTimeout(() => notification.classList.remove('show'), 3000);
+}
+
+function showStatus(message, type) {
+    const status = document.getElementById('status');
+    status.className = `status ${type}`;
+
+    if (type === 'loading') {
+        status.innerHTML = `<div class="spinner"></div><span>${message}</span>`;
+    } else {
+        const icon = type === 'success'
+            ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+            : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        status.innerHTML = `${icon}<span>${message}</span>`;
+        setTimeout(() => { status.className = 'status'; }, 4000);
+    }
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function scrollToGenerator() {
+    document.querySelector('.generator-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+window.addEventListener('beforeunload', () => {
+    if (currentAccount && token) {
+        saveSession();
+    }
+});
+</script>
+</body>
+</html>
