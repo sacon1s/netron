@@ -1471,6 +1471,15 @@
             letter-spacing: 1px;
         }
 
+.footer-updated {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+
         .footer-api {
             display: flex;
             align-items: center;
@@ -2257,7 +2266,10 @@
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <p class="footer-copyright">© 2025 NETRON. All rights reserved.</p>
+                    <p class="footer-copyright">
+  © 2025 NETRON. All rights reserved.
+  <span class="footer-updated">Last updated 26 December 2025</span>
+</p>
                     <div class="footer-api">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -2321,7 +2333,7 @@
             <div class="legal-content">
                 <div class="legal-header">
                     <h2 class="legal-title">TERMS OF SERVICE</h2>
-                    <p class="legal-updated">Last updated: January 2025</p>
+                    <p class="legal-updated">Last updated: December 2025</p>
                 </div>
 
                 <div class="legal-section">
@@ -2406,7 +2418,7 @@
             <div class="legal-content">
                 <div class="legal-header">
                     <h2 class="legal-title">PRIVACY POLICY</h2>
-                    <p class="legal-updated">Last updated: January 2025</p>
+                    <p class="legal-updated">Last updated: December 2025</p>
                 </div>
 
                 <div class="legal-section">
@@ -3252,13 +3264,40 @@ document.addEventListener('keydown', (e) => {
 
 // ==================== UTILITY FUNCTIONS ====================
 function copyEmail() {
-    const email = document.getElementById('emailAddress').textContent;
-    if (email && !email.includes('Click') && !email.includes('expired')) {
-        navigator.clipboard.writeText(email).then(() => {
-            showNotification('Email copied to clipboard!');
-        });
+  const emailEl = document.getElementById('emailAddress');
+  const email = (emailEl?.textContent || '').trim();
+
+  if (!email || email.includes('Click Generate') || email.includes('expired')) return;
+
+  const fallbackCopy = (text) => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-9999px';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+      document.execCommand('copy');
+      showNotification('Email copied to clipboard!');
+    } catch (e) {
+      showNotification('Copy failed. Please copy manually.');
+    } finally {
+      document.body.removeChild(textarea);
     }
+  };
+
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(email)
+      .then(() => showNotification('Email copied to clipboard!'))
+      .catch(() => fallbackCopy(email));
+  } else {
+    fallbackCopy(email);
+  }
 }
+
 
 function showNotification(message) {
     const notification = document.getElementById('notification');
