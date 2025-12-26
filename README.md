@@ -1,11 +1,25 @@
-# What is NETRON?
-NETRON is a free, anonymous temporary email service that helps protect your privacy online. Generate disposable email addresses instantly without registration to avoid spam and keep your real inbox clean.
+NETRON
+NETRON is a temporary email service that lets you generate a disposable inbox in seconds without exposing your personal address. It’s built for quick signups, one-time verifications, and situations where you simply don’t want your main mailbox to end up in spam lists.
 
-How It Works
-Click "Generate" to create a new temporary email
-Use this email for sign-ups, verifications, etc.
-Receive emails in real-time in your inbox
-Email automatically expires after 60 minutes
-Save important messages to favorites
-Technology
-NETRON is built with modern web technologies and utilizes the Mail.tm public API for reliable email delivery. Our minimalist design focuses on speed, simplicity, and user experience.
+What it does
+Generates a temporary email address in one click
+
+Shows incoming emails almost instantly (auto-refresh)
+
+Automatically expires after 
+60
+60 minutes
+
+Simple inbox controls: select, favorite, delete
+
+Clean, minimal interface focused on speed and privacy
+
+What it’s for
+Signing up on services you don’t fully trust yet
+
+Trial accounts and one-time confirmation emails
+
+Keeping your real inbox clean and protected from leaks/spam
+
+Important
+This service is intended for legitimate privacy use. Please don’t use it for spam, fraud, harassment, or anything illegal.
