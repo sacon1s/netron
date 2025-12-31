@@ -3,6 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NETRON — temporary email service with auto-expire and real-time inbox." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <meta http-equiv="Content-Security-Policy"
+          content="
+default-src 'self';
+connect-src https://api.mail.tm;
+img-src 'self' data: https:;
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+font-src https://fonts.gstatic.com;
+script-src 'self' 'unsafe-inline';
+base-uri 'none';
+object-src 'none';
+frame-ancestors 'none';
+form-action 'none';
+" />
+
     <title>Netron</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -264,6 +283,20 @@
             position: relative;
             cursor: pointer;
         }
+
+        .header-nav-link {
+            background: transparent;
+            border: 0;
+            padding: 0;
+            font: inherit;
+        }
+
+        .header-nav-link:focus-visible {
+            outline: 2px solid rgba(255,255,255,0.25);
+            outline-offset: 6px;
+            border-radius: 10px;
+        }
+
 
         .header-nav-link::after {
             content: '';
@@ -1926,7 +1959,110 @@
                 padding: 15px 20px;
             }
         }
-    </style>
+    
+
+        /* Global banner (offline / error state) */
+        .global-banner {
+            position: fixed;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 48px);
+            max-width: 900px;
+            z-index: 1500;
+            display: none;
+        }
+        .global-banner.show { display: block; animation: fadeInDown 0.25s ease; }
+        .global-banner-content {
+            background: rgba(0,0,0,0.9);
+            border: 1px solid var(--border-secondary);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .global-banner-text { color: var(--text-secondary); font-size: 0.85rem; }
+        .global-banner-actions { display: flex; gap: 10px; flex-shrink: 0; }
+        .global-banner-btn {
+            border: 1px solid var(--border-secondary);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.82rem;
+            transition: all 0.2s ease;
+        }
+        .global-banner-btn:hover { background: var(--accent-dim); color: var(--text-primary); }
+        .global-banner-btn.secondary { opacity: 0.8; }
+
+        /* Inbox controls */
+        .inbox-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex: 1;
+            justify-content: flex-end;
+        }
+        .inbox-search { flex: 1; max-width: 340px; }
+        .inbox-search-input {
+            width: 100%;
+            height: 42px;
+            border-radius: 12px;
+            border: 1px solid var(--border-secondary);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 0 14px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+        .inbox-search-input::placeholder { color: var(--text-muted); }
+        .inbox-search-input:focus { border-color: var(--border-hover); box-shadow: 0 0 0 4px rgba(255,255,255,0.04); }
+
+        .inbox-toggle {
+            height: 42px;
+            padding: 0 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-secondary);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .inbox-toggle .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.45);
+        }
+        .inbox-toggle[aria-pressed="false"] .dot {
+            background: var(--danger);
+            box-shadow: 0 0 10px rgba(248, 113, 113, 0.45);
+        }
+        .inbox-toggle:hover { background: var(--accent-dim); color: var(--text-primary); border-color: var(--border-hover); }
+
+        @media (max-width: 768px) {
+            .inbox-controls { flex-direction: column; align-items: stretch; }
+            .inbox-search { max-width: 100%; }
+            .global-banner { top: 80px; }
+        }
+
+</style>
+
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="manifest.webmanifest">
+
 </head>
 <body>
     <!-- Background -->
@@ -1950,14 +2086,26 @@
                         <div class="header-logo-icon">N</div>
                         NETRON
                     </a>
-                    <nav class="header-nav">
-                        <span class="header-nav-link" onclick="openModal('about')">About</span>
-                        <span class="header-nav-link" onclick="openModal('privacy')">Privacy</span>
-                        <span class="header-nav-link" onclick="openModal('terms')">Terms</span>
+                    <nav class="header-nav" aria-label="Site">
+                        <button class="header-nav-link" type="button" onclick="openModal('about')">About</button>
+                        <button class="header-nav-link" type="button" onclick="openModal('privacy')">Privacy</button>
+                        <button class="header-nav-link" type="button" onclick="openModal('terms')">Terms</button>
                     </nav>
                 </div>
             </div>
         </header>
+
+    <!-- Global Status Banner -->
+    <div class="global-banner" id="globalBanner" aria-live="polite" aria-atomic="true">
+        <div class="global-banner-content">
+            <div class="global-banner-text" id="globalBannerText">Connection issue.</div>
+            <div class="global-banner-actions">
+                <button class="global-banner-btn" type="button" id="globalBannerRetry">Retry</button>
+                <button class="global-banner-btn secondary" type="button" id="globalBannerDismiss">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
 
         <!-- Hero Section -->
         <section class="hero">
@@ -2178,6 +2326,17 @@
                             <h3 class="inbox-title" id="inboxTitle">INBOX</h3>
                             <span class="inbox-count" id="inboxCount">0 messages</span>
                         </div>
+
+                        <div class="inbox-controls">
+                            <div class="inbox-search">
+                                <input id="inboxSearch" class="inbox-search-input" type="search" placeholder="Search: from, subject, preview" autocomplete="off" />
+                            </div>
+                            <button class="inbox-toggle" type="button" id="autoRefreshToggle" aria-pressed="true" title="Toggle auto-refresh">
+                                <span class="dot"></span>
+                                Auto-refresh: ON
+                            </button>
+                        </div>
+
                         <div class="inbox-actions">
                             <button class="btn-icon" onclick="selectAll()" title="Select All">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2268,7 +2427,7 @@
                 <div class="footer-bottom">
                     <p class="footer-copyright">
   © 2025 NETRON. All rights reserved.
-  <span class="footer-updated">Last updated 26 December 2025</span>
+  <span class="footer-updated">Last updated 1 January 2026<br><span class="ny-hny">Happy New Year</span></span>
 </p>
                     <div class="footer-api">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2284,7 +2443,7 @@
     </div>
 
     <!-- Message Modal -->
-    <div class="modal-overlay" id="messageModal">
+    <div class="modal-overlay" id="messageModal" role="dialog" aria-modal="true" aria-labelledby="modalSubject">
         <div class="modal-container">
             <div class="modal-header">
                 <h3 class="modal-title" id="modalSubject">Subject</h3>
@@ -2324,10 +2483,10 @@
     </div>
 
     <!-- Terms Modal -->
-    <div class="modal-overlay" id="termsModal">
+    <div class="modal-overlay" id="termsModal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
         <div class="modal-container" style="max-width: 750px;">
             <div class="modal-header">
-                <h3 class="modal-title">Terms of Service</h3>
+                <h3 class="modal-title" id="termsTitle">Terms of Service</h3>
                 <button class="modal-close" onclick="closeModal('terms')">&times;</button>
             </div>
             <div class="legal-content">
@@ -2409,10 +2568,10 @@
     </div>
 
     <!-- Privacy Modal -->
-    <div class="modal-overlay" id="privacyModal">
+    <div class="modal-overlay" id="privacyModal" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
         <div class="modal-container" style="max-width: 750px;">
             <div class="modal-header">
-                <h3 class="modal-title">Privacy Policy</h3>
+                <h3 class="modal-title" id="privacyTitle">Privacy Policy</h3>
                 <button class="modal-close" onclick="closeModal('privacy')">&times;</button>
             </div>
             <div class="legal-content">
@@ -2479,10 +2638,10 @@
     </div>
 
     <!-- About Modal -->
-    <div class="modal-overlay" id="aboutModal">
+    <div class="modal-overlay" id="aboutModal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
         <div class="modal-container" style="max-width: 750px;">
             <div class="modal-header">
-                <h3 class="modal-title">About NETRON</h3>
+                <h3 class="modal-title" id="aboutTitle">About NETRON</h3>
                 <button class="modal-close" onclick="closeModal('about')">&times;</button>
             </div>
             <div class="legal-content">
@@ -2587,6 +2746,9 @@ let favorites = JSON.parse(localStorage.getItem('netron_favorites') || '[]');
 let selectedMessages = new Set();
 let currentTab = 'inbox';
 let currentMessageId = null;
+let autoRefreshEnabled = true;
+let searchQuery = '';
+
 
 // Stats
 let stats = {
@@ -2600,6 +2762,39 @@ document.addEventListener('DOMContentLoaded', () => {
     initHeaderScroll();
     updateStats();
     restoreSession();
+
+    // Inbox controls
+    const searchInput = document.getElementById('inboxSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = String(e.target.value || '');
+            selectedMessages.clear();
+            updateBatchActions();
+            displayMessages();
+        });
+    }
+
+    const autoToggle = document.getElementById('autoRefreshToggle');
+    if (autoToggle) {
+        const updateToggleUI = () => {
+            autoToggle.setAttribute('aria-pressed', String(autoRefreshEnabled));
+            autoToggle.innerHTML = `<span class="dot"></span> Auto-refresh: ${autoRefreshEnabled ? 'ON' : 'OFF'}`;
+        };
+        updateToggleUI();
+        autoToggle.addEventListener('click', () => {
+            autoRefreshEnabled = !autoRefreshEnabled;
+            updateToggleUI();
+            if (autoRefreshEnabled) startAutoRefresh();
+            else stopAutoRefresh();
+            showNotification(autoRefreshEnabled ? 'Auto-refresh enabled' : 'Auto-refresh disabled');
+        });
+    }
+
+    // Online/offline banner
+    updateOnlineStatusBanner();
+    window.addEventListener('online', updateOnlineStatusBanner);
+    window.addEventListener('offline', updateOnlineStatusBanner);
+
 });
 
 // ==================== SESSION MANAGEMENT ====================
@@ -2648,53 +2843,19 @@ async function validateAndRestoreSession() {
         });
 
         if (!res.ok) {
-            const reauthorized = await reauthorize();
-            if (!reauthorized) {
-                clearSession();
-                return;
-            }
+            clearSession();
+            showNotification('Session expired. Generate a new email.');
+            return;
         }
 
         restoreUI();
 
     } catch (error) {
         console.error('Error validating session:', error);
-        const reauthorized = await reauthorize();
-        if (!reauthorized) {
-            clearSession();
-        } else {
-            restoreUI();
-        }
+        clearSession();
     }
 }
 
-async function reauthorize() {
-    if (!currentAccount || !currentAccount.email || !currentAccount.password) {
-        return false;
-    }
-
-    try {
-        const tokenRes = await fetch(`${API_URL}/token`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                address: currentAccount.email,
-                password: currentAccount.password
-            })
-        });
-
-        if (!tokenRes.ok) return false;
-
-        const tokenData = await tokenRes.json();
-        token = tokenData.token;
-        saveSession();
-        return true;
-
-    } catch (error) {
-        console.error('Reauthorization failed:', error);
-        return false;
-    }
-}
 
 function restoreUI() {
     const emailBox = document.getElementById('emailAddress');
@@ -2798,7 +2959,7 @@ async function createEmail() {
 
         const tokenData = await tokenRes.json();
         token = tokenData.token;
-        currentAccount = { id: accountData.id, email, password };
+        currentAccount = { id: accountData.id, email };
 
         timeRemaining = EMAIL_LIFETIME;
         saveSession();
@@ -2901,8 +3062,14 @@ function expireEmail() {
 }
 
 // ==================== INBOX ====================
+function stopAutoRefresh() {
+    if (refreshIntervalId) clearInterval(refreshIntervalId);
+    refreshIntervalId = null;
+}
+
 function startAutoRefresh() {
     if (refreshIntervalId) clearInterval(refreshIntervalId);
+    if (!autoRefreshEnabled) return;
     refreshIntervalId = setInterval(refreshInbox, REFRESH_INTERVAL);
 }
 
@@ -2919,12 +3086,9 @@ async function refreshInbox() {
 
         if (!res.ok) {
             if (res.status === 401) {
-                const reauthorized = await reauthorize();
-                if (reauthorized) {
-                    return refreshInbox();
-                } else {
-                    throw new Error('Session expired');
-                }
+                clearSession();
+                expireEmail();
+                return;
             }
             throw new Error('Failed to fetch messages');
         }
@@ -2958,9 +3122,7 @@ async function refreshInbox() {
 
 function displayMessages() {
     const list = document.getElementById('messageList');
-    const displayList = currentTab === 'inbox'
-        ? messages
-        : messages.filter(m => favorites.includes(m.id));
+    const displayList = getDisplayList();
 
     document.getElementById('inboxTitle').textContent = currentTab === 'inbox' ? 'INBOX' : 'FAVORITES';
     document.getElementById('inboxCount').textContent = `${displayList.length} message${displayList.length !== 1 ? 's' : ''}`;
@@ -3033,6 +3195,22 @@ function switchTab(tab) {
     displayMessages();
 }
 
+
+
+function getDisplayList() {
+    const baseList = currentTab === 'inbox' ? messages : messages.filter(m => favorites.includes(m.id));
+    const q = (searchQuery || '').trim().toLowerCase();
+    if (!q) return baseList;
+
+    return baseList.filter(m => {
+        const from = (m.from && m.from.address) ? String(m.from.address).toLowerCase() : '';
+        const subject = String(m.subject || '').toLowerCase();
+        const intro = String(m.intro || '').toLowerCase();
+        return from.includes(q) || subject.includes(q) || intro.includes(q);
+    });
+}
+
+
 // ==================== MESSAGE SELECTION ====================
 function toggleSelect(event, id) {
     event.stopPropagation();
@@ -3048,7 +3226,7 @@ function toggleSelect(event, id) {
 }
 
 function selectAll() {
-    const displayList = currentTab === 'inbox' ? messages : messages.filter(m => favorites.includes(m.id));
+    const displayList = getDisplayList();
     const allSelected = selectedMessages.size === displayList.length && displayList.length > 0;
 
     if (allSelected) {
@@ -3159,32 +3337,9 @@ async function openMessage(id) {
         // Обработка HTML контента
         let content = message.html || `<pre style="white-space: pre-wrap;">${escapeHtml(message.text)}</pre>` || '<em>Empty message</em>';
 
-        // Создаем временный элемент для обработки HTML
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = content;
-
-        // Находим все ссылки и исправляем/добавляем атрибуты
-        const links = tempDiv.querySelectorAll('a');
-        links.forEach(link => {
-            let originalHref = link.getAttribute('href');
-            if (originalHref) {
-                // Исправляем ссылки без протокола
-                if (!originalHref.match(/^[a-zA-Z0-9.+-]+:/i) && !originalHref.startsWith('#') && !originalHref.startsWith('javascript:') && !originalHref.startsWith('mailto:') && !originalHref.startsWith('tel:')) {
-                    if (originalHref.startsWith('//')) {
-                        // Protocol-relative: добавляем https:
-                        link.setAttribute('href', 'https:' + originalHref);
-                    } else {
-                        // Без протокола (например, "example.com" или "/path"): добавляем https:// и убираем ведущие /
-                        link.setAttribute('href', 'https://' + originalHref.replace(/^\/+/, ''));
-                    }
-                }
-                // Добавляем target и rel для безопасности
-                link.setAttribute('target', '_blank');
-                link.setAttribute('rel', 'noopener noreferrer');
-            }
-        });
-
-        document.getElementById('modalContent').innerHTML = tempDiv.innerHTML;
+        // Обработка HTML контента (sanitized)
+        const safeHtml = sanitizeAndEnhanceEmailHtml(content);
+        document.getElementById('modalContent').innerHTML = safeHtml;
 
         const favBtn = document.getElementById('modalFavBtn');
         favBtn.style.color = favorites.includes(id) ? 'var(--warning)' : '';
@@ -3229,19 +3384,45 @@ async function deleteMessageModal() {
 }
 
 // ==================== MODALS ====================
+let lastFocusedElement = null;
+
+function focusFirstInModal(modalEl) {
+    const focusable = modalEl.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const first = focusable[0];
+    if (first && typeof first.focus === 'function') first.focus();
+    else if (typeof modalEl.focus === 'function') modalEl.focus();
+}
+
 function openModal(type) {
     const modalId = type + 'Modal';
-    document.getElementById(modalId).classList.add('active');
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    lastFocusedElement = document.activeElement;
+
+    modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+
+    modal.setAttribute('tabindex', '-1');
+    setTimeout(() => focusFirstInModal(modal), 0);
 }
 
 function closeModal(type) {
     const modalId = type + 'Modal';
-    document.getElementById(modalId).classList.remove('active');
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    modal.classList.remove('active');
     document.body.style.overflow = '';
 
     if (type === 'message') {
         currentMessageId = null;
+    }
+
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+        lastFocusedElement.focus();
     }
 }
 
@@ -3261,6 +3442,51 @@ document.addEventListener('keydown', (e) => {
         document.body.style.overflow = '';
     }
 });
+
+
+
+// ==================== GLOBAL BANNER (OFFLINE / ERROR) ====================
+let lastBannerMessage = '';
+
+function showGlobalBanner(message, { retry = null } = {}) {
+    const banner = document.getElementById('globalBanner');
+    const text = document.getElementById('globalBannerText');
+    const retryBtn = document.getElementById('globalBannerRetry');
+    const dismissBtn = document.getElementById('globalBannerDismiss');
+
+    if (!banner || !text || !retryBtn || !dismissBtn) return;
+
+    lastBannerMessage = message;
+    text.textContent = message;
+    banner.classList.add('show');
+
+    // prevent stacking handlers
+    retryBtn.onclick = null;
+    dismissBtn.onclick = null;
+
+    retryBtn.onclick = async () => {
+        if (typeof retry === 'function') await retry();
+        else await refreshInbox();
+    };
+
+    dismissBtn.onclick = () => hideGlobalBanner();
+}
+
+function hideGlobalBanner() {
+    const banner = document.getElementById('globalBanner');
+    if (!banner) return;
+    banner.classList.remove('show');
+}
+
+function updateOnlineStatusBanner() {
+    if (!navigator.onLine) {
+        showGlobalBanner('No internet connection. Check network and retry.', { retry: () => refreshInbox() });
+    } else {
+        // don't force-hide if last message is about API errors; only hide offline banner
+        if (lastBannerMessage.includes('No internet')) hideGlobalBanner();
+    }
+}
+
 
 // ==================== UTILITY FUNCTIONS ====================
 function copyEmail() {
@@ -3345,6 +3571,65 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function sanitizeAndEnhanceEmailHtml(rawHtml) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(String(rawHtml || ''), 'text/html');
+
+    const bannedTags = [
+        'script', 'iframe', 'object', 'embed', 'link', 'meta', 'base',
+        'form', 'input', 'button', 'textarea', 'select', 'option'
+    ];
+    bannedTags.forEach(tag => {
+        doc.querySelectorAll(tag).forEach(el => el.remove());
+    });
+
+    const isBadUrl = (url) => {
+        const u = String(url || '').trim().toLowerCase();
+        return u.startsWith('javascript:') || u.startsWith('data:text/html') || u.startsWith('vbscript:');
+    };
+
+    const all = doc.body.querySelectorAll('*');
+    all.forEach(el => {
+        [...el.attributes].forEach(attr => {
+            const name = attr.name.toLowerCase();
+            const value = attr.value;
+
+            if (name.startsWith('on')) el.removeAttribute(attr.name);
+            if (name === 'srcdoc') el.removeAttribute(attr.name);
+
+            if (name === 'href' || name === 'src' || name === 'xlink:href') {
+                if (isBadUrl(value)) el.removeAttribute(attr.name);
+            }
+
+            if (name === 'style' && /expression\(|url\(|@import/i.test(value)) {
+                el.removeAttribute('style');
+            }
+        });
+
+        if (el.tagName === 'A') {
+            let href = el.getAttribute('href') || '';
+            if (href && !href.match(/^[a-zA-Z0-9.+-]+:/i) && !href.startsWith('#') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
+                if (href.startsWith('//')) href = 'https:' + href;
+                else href = 'https://' + href.replace(/^\/+/, '');
+                el.setAttribute('href', href);
+            }
+            el.setAttribute('target', '_blank');
+            el.setAttribute('rel', 'noopener noreferrer');
+        }
+
+        if (el.tagName === 'IMG') {
+            el.setAttribute('loading', 'lazy');
+            el.setAttribute('decoding', 'async');
+            el.setAttribute('referrerpolicy', 'no-referrer');
+            const src = el.getAttribute('src');
+            if (isBadUrl(src)) el.removeAttribute('src');
+        }
+    });
+
+    return doc.body.innerHTML;
+}
+
+
 function scrollToGenerator() {
     document.querySelector('.generator-section').scrollIntoView({ behavior: 'smooth' });
 }
@@ -3354,6 +3639,100 @@ window.addEventListener('beforeunload', () => {
         saveSession();
     }
 });
+
+
+// ==================== PWA (MINIMAL) ====================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {
+            // ignore
+        });
+    });
+}
+</script>
+
+<!-- New Year snow effect (overlay) -->
+<style id="ny-snow-style">
+  #ny-snow{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:2147483647;
+  }
+  .ny-flake{
+    position:absolute;
+    top:-12vh;
+    left:0;
+    will-change: transform;
+    color: rgba(255,255,255,var(--a,0.9));
+    font-size: var(--s,18px);
+    text-shadow: 0 2px 10px rgba(255,255,255,0.15);
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+    animation: ny-fall var(--d,10s) linear infinite;
+    animation-delay: var(--dl,0s);
+    transform: translate3d(var(--x,0px), -10vh, 0) rotate(0deg);
+    user-select:none;
+  }
+  @keyframes ny-fall{
+    0%{ transform: translate3d(var(--x,0px), -10vh, 0) rotate(0deg); }
+    100%{ transform: translate3d(calc(var(--x,0px) + var(--dr,0px)), 110vh, 0) rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    #ny-snow{display:none !important;}
+  }
+
+  /* Footer New Year text */
+  .ny-hny{
+    display:block;
+    margin-top:6px;
+    font-weight:600;
+    letter-spacing:0.6px;
+  }
+</style>
+
+<script id="ny-snow-script">
+(() => {
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) return;
+
+  function init(){
+    if (document.getElementById('ny-snow')) return;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'ny-snow';
+    document.body.appendChild(wrap);
+
+    const count = Math.min(120, Math.max(50, Math.round((window.innerWidth * window.innerHeight) / 18000)));
+    const chars = ['❄','❅','❆'];
+
+    for (let i=0;i<count;i++){
+      const f = document.createElement('div');
+      f.className = 'ny-flake';
+      f.textContent = chars[(Math.random()*chars.length)|0];
+
+      const left = Math.random() * 100;
+      const size = 12 + Math.random() * 18;
+      const dur  = 7 + Math.random() * 10;
+      const delay = -Math.random() * dur;
+      const drift = (Math.random()*120 - 60);
+      const alpha = 0.55 + Math.random() * 0.45;
+
+      f.style.left = left + 'vw';
+      f.style.setProperty('--s', size + 'px');
+      f.style.setProperty('--d', dur + 's');
+      f.style.setProperty('--dl', delay + 's');
+      f.style.setProperty('--dr', drift + 'px');
+      f.style.setProperty('--a', alpha.toFixed(2));
+      f.style.setProperty('--x', (Math.random()*30 - 15) + 'px');
+
+      wrap.appendChild(f);
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });
+  else init();
+})();
 </script>
 </body>
 </html>
