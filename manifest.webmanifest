@@ -1,0 +1,17 @@
+{
+  "name": "NETRON — Temp Mail",
+  "short_name": "NETRON",
+  "description": "Free temporary email service. Instant disposable address, live inbox, auto-expire after 60 minutes.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#030303",
+  "theme_color": "#030303",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

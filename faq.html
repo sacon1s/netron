@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Frequently asked questions about NETRON temporary email service.">
+    <title>FAQ — NETRON</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#030303">
+
+    <meta http-equiv="Content-Security-Policy"
+          content="
+default-src 'self';
+connect-src 'none';
+img-src 'self' data: https:;
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+font-src https://fonts.gstatic.com;
+script-src 'self';
+base-uri 'none';
+object-src 'none';
+frame-ancestors 'none';
+form-action 'none';
+" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="bg" aria-hidden="true">
+        <div class="bg-grid"></div>
+        <div class="bg-glow-1"></div>
+        <div class="bg-glow-2"></div>
+    </div>
+
+    <div class="page-shell">
+        <header class="header" id="header">
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-mark">N</span>
+                    NETRON
+                </a>
+                <nav class="nav" aria-label="Main">
+                    <a class="nav-link" href="about.html">About</a>
+                    <a class="nav-link" href="faq.html" aria-current="page">FAQ</a>
+                    <a class="nav-link" href="privacy.html">Privacy</a>
+                    <a class="nav-link" href="terms.html">Terms</a>
+                </nav>
+                <button class="nav-burger" id="navBurger" aria-label="Menu" aria-expanded="false">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+            </div>
+        </header>
+        <nav class="nav-mobile" id="navMobile" aria-label="Mobile">
+            <a class="nav-link" href="index.html">Home</a>
+            <a class="nav-link" href="about.html">About</a>
+            <a class="nav-link" href="faq.html">FAQ</a>
+            <a class="nav-link" href="privacy.html">Privacy Policy</a>
+            <a class="nav-link" href="terms.html">Terms of Service</a>
+        </nav>
+
+        <main class="page-main">
+            <section class="page-hero">
+                <div class="container">
+                    <h1 class="page-title">FAQ</h1>
+                    <p class="page-sub">Everything you might want to know about temporary email.</p>
+                </div>
+            </section>
+
+            <section class="page-content">
+                <div class="container">
+                    <div class="faq-list">
+                        <details class="faq-item">
+                            <summary>What is NETRON?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>NETRON is a free disposable email service. It gives you a temporary address that receives mail just like a normal inbox — but self-destructs after 60 minutes, keeping your real email safe from spam and leaks.</p></div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>How long does the mailbox live?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>60 minutes from generation. The countdown is shown as a ring above the address. Receiving new mail extends the lifetime, so an actively used inbox survives longer.</p></div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Can I send email from NETRON?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>No. NETRON is receive-only — that's a deliberate design choice that keeps the service anonymous and abuse-free.</p></div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>I'm waiting for a code but nothing arrives. Why?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body">
+                                <p>A few possible reasons:</p>
+                                <p>1. Some services block known disposable domains outright — there's nothing any temp-mail service can do about that.<br>
+                                2. Delivery can take a minute or two, especially with bulk senders.<br>
+                                3. Check that the address was copied in full — the QR button is handy here.</p>
+                                <p>If all else fails, generate a new address (you can pick a custom name) and try again.</p>
+                            </div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Can I choose my own address name?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>Yes — open “Customize address” above the Generate button, type your name (3–29 characters: latin letters, digits, dots, dashes) and hit Generate. If the name is taken, pick another one.</p></div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Is NETRON really private?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>NETRON itself collects nothing: it's a static site with no backend. Your browser talks straight to the Guerrilla Mail API that hosts the mailboxes; favorites and your session live in your browser's local storage only. The usual temp-mail caveat applies — never use disposable mail for anything sensitive, since anyone who knows the address could potentially read it while it's alive.</p></div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Should I use it for important accounts?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>No. The mailbox is destroyed after 60 minutes. If a service later sends a password-reset or security email, it will be gone. Use NETRON only for throwaway signups.</p></div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Can I recover an expired mailbox?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>No. Expiration is permanent — that's the point. If you act fast you can generate a mailbox with the same custom name before someone else claims it, but old mail is unrecoverable.</p></div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Can I run several addresses at once?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>NETRON tracks one active mailbox per browser tab session. If you need several, open the site in a second tab (or a private window) and generate another address there. Tip: copy each address somewhere before switching — generate with the same custom name to return to the same mailbox while it's still alive.</p></div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>What are favorites?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>Star any message to pin it to the Favorites tab for quick access while the mailbox lives. Favorites are stored locally in your browser and are cleared together with the session — they don't survive mailbox expiration.</p></div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Is it safe to open HTML emails?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>NETRON sanitizes every message before rendering: scripts, frames, forms and event handlers are stripped, dangerous URLs are removed, and links are forced to open safely in a new tab. Still, treat unknown emails with the same caution as anywhere else.</p></div>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Who provides the mailboxes?
+                                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </summary>
+                            <div class="faq-body"><p>The disposable mailboxes are provided by the public <a href="https://www.guerrillamail.com" target="_blank" rel="noopener noreferrer">Guerrilla Mail</a> API. NETRON is a lightweight, privacy-respecting client for it, served via GitHub Pages.</p></div>
+                        </details>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <div class="footer-logo">NETRON</div>
+                        <p class="footer-desc">Free temporary email service for protecting your privacy. No registration, instant generation, auto-expire.</p>
+                    </div>
+                    <div class="footer-cols">
+                        <div class="footer-col">
+                            <h4>Service</h4>
+                            <ul>
+                                <li><a href="about.html">About</a></li>
+                                <li><a href="faq.html">FAQ</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Legal</h4>
+                            <ul>
+                                <li><a href="privacy.html">Privacy Policy</a></li>
+                                <li><a href="terms.html">Terms of Service</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Support</h4>
+                            <ul>
+                                <li><a href="https://boosty.to/netron1" target="_blank" rel="noopener noreferrer">Boosty</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <span>© <span class="js-year">2026</span> NETRON. All rights reserved.</span>
+                    <span class="footer-powered">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        Powered by Guerrilla Mail API
+                    </span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/site.js"></script>
+</body>
+</html>

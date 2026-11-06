@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="About NETRON — a free anonymous temporary email service. How it works, what it's for, and the technology behind it.">
+    <title>About — NETRON</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#030303">
+
+    <meta http-equiv="Content-Security-Policy"
+          content="
+default-src 'self';
+connect-src 'none';
+img-src 'self' data: https:;
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+font-src https://fonts.gstatic.com;
+script-src 'self';
+base-uri 'none';
+object-src 'none';
+frame-ancestors 'none';
+form-action 'none';
+" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="bg" aria-hidden="true">
+        <div class="bg-grid"></div>
+        <div class="bg-glow-1"></div>
+        <div class="bg-glow-2"></div>
+    </div>
+
+    <div class="page-shell">
+        <header class="header" id="header">
+            <div class="container header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-mark">N</span>
+                    NETRON
+                </a>
+                <nav class="nav" aria-label="Main">
+                    <a class="nav-link" href="about.html" aria-current="page">About</a>
+                    <a class="nav-link" href="faq.html">FAQ</a>
+                    <a class="nav-link" href="privacy.html">Privacy</a>
+                    <a class="nav-link" href="terms.html">Terms</a>
+                </nav>
+                <button class="nav-burger" id="navBurger" aria-label="Menu" aria-expanded="false">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+            </div>
+        </header>
+        <nav class="nav-mobile" id="navMobile" aria-label="Mobile">
+            <a class="nav-link" href="index.html">Home</a>
+            <a class="nav-link" href="about.html">About</a>
+            <a class="nav-link" href="faq.html">FAQ</a>
+            <a class="nav-link" href="privacy.html">Privacy Policy</a>
+            <a class="nav-link" href="terms.html">Terms of Service</a>
+        </nav>
+
+        <main class="page-main">
+            <section class="page-hero">
+                <div class="container">
+                    <h1 class="page-title">ABOUT</h1>
+                    <p class="page-sub">What NETRON is, why it exists and how it works under the hood.</p>
+                </div>
+            </section>
+
+            <section class="page-content">
+                <div class="container">
+                    <div class="prose-card prose">
+                        <h2>WHAT IS NETRON?</h2>
+                        <p>NETRON is a free, anonymous temporary email service. It gives you a disposable email address in seconds — no registration, no personal data, no strings attached. Use it wherever you'd rather not hand over your real mailbox: quick signups, one-time verifications, downloads, trials, Wi-Fi portals.</p>
+                        <p>When you're done, the mailbox destroys itself. Your real inbox stays clean, your identity stays private.</p>
+
+                        <h2>HOW IT WORKS</h2>
+                        <div class="steps">
+                            <div class="step">
+                                <span class="step-num"></span>
+                                <div>
+                                    <b>Generate</b>
+                                    <p>Click “Generate”. NETRON creates a fresh mailbox for you — or use “Customize address” to pick your own name first.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-num"></span>
+                                <div>
+                                    <b>Use it anywhere</b>
+                                    <p>Copy the address, or scan its QR code to move it to your phone. Paste it into any signup form.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-num"></span>
+                                <div>
+                                    <b>Watch it live</b>
+                                    <p>The inbox refreshes every 10 seconds. New mail triggers a toast, a sound cue and an unread badge in the tab title.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-num"></span>
+                                <div>
+                                    <b>Let it burn</b>
+                                    <p>After 60 minutes the mailbox and everything in it is destroyed automatically. Nothing to clean up.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h2>PERFECT FOR</h2>
+                        <ul>
+                            <li>Signing up for services you don't fully trust yet</li>
+                            <li>One-time confirmation emails and trial accounts</li>
+                            <li>Downloading files gated behind an email form</li>
+                            <li>Testing your own email flows during development</li>
+                            <li>Keeping newsletters and promo spam away from your real address</li>
+                        </ul>
+
+                        <h2>TECHNOLOGY</h2>
+                        <p>NETRON is a fully static, client-side application — there is no NETRON server. Your browser talks directly to the public <b>Guerrilla Mail API</b>, which provides the disposable mailboxes. Everything else — favorites, statistics, your session — lives only in your browser's local storage.</p>
+                        <p>The site is served from GitHub Pages and protected by a strict Content-Security-Policy. Email HTML is sanitized in the browser before it is ever rendered.</p>
+                        <div class="notice">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                            <span>Please use NETRON for legitimate privacy needs. Don't use it for spam, fraud, harassment or anything illegal — see our <a href="terms.html" style="text-decoration:underline">Terms of Service</a>.</span>
+                        </div>
+
+                        <h2>SUPPORT NETRON</h2>
+                        <p>NETRON is free and will stay free. If you like it, you can support development on <a href="https://boosty.to/netron1" target="_blank" rel="noopener noreferrer" style="text-decoration:underline">Boosty</a>.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <div class="footer-logo">NETRON</div>
+                        <p class="footer-desc">Free temporary email service for protecting your privacy. No registration, instant generation, auto-expire.</p>
+                    </div>
+                    <div class="footer-cols">
+                        <div class="footer-col">
+                            <h4>Service</h4>
+                            <ul>
+                                <li><a href="about.html">About</a></li>
+                                <li><a href="faq.html">FAQ</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Legal</h4>
+                            <ul>
+                                <li><a href="privacy.html">Privacy Policy</a></li>
+                                <li><a href="terms.html">Terms of Service</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Support</h4>
+                            <ul>
+                                <li><a href="https://boosty.to/netron1" target="_blank" rel="noopener noreferrer">Boosty</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <span>© <span class="js-year">2026</span> NETRON. All rights reserved.</span>
+                    <span class="footer-powered">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        Powered by Guerrilla Mail API
+                    </span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/site.js"></script>
+</body>
+</html>
